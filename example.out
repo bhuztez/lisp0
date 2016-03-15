@@ -1,0 +1,51 @@
+a
+(a b c)
+true
+false
+true
+true
+false
+true
+a
+(b c)
+(a b c)
+second
+(a b)
+(z b c)
+(a b c)
+#LAMBDA<(x y z) (cond ((atom z) (cond ((eq z y) x) ((quote true) z))) ((quote true) (cons (subst x y (car z)) (subst x y (cdr z)))))>
+(a m (a m c) d)
+#MACRO<(n p e) (cons (quote label) (cons n (cons (cons (quote lambda) (cons p (cons e (quote ())))) (quote ()))))>
+#LAMBDA<(x y) (cons x (cons y (quote ())))>
+#LAMBDA<(e) (car (car e))>
+#LAMBDA<(e) (car (cdr e))>
+#LAMBDA<(e) (car (cdr (car e)))>
+#LAMBDA<(e) (car (cdr (cdr e)))>
+#LAMBDA<(e) (car (cdr (cdr (car e))))>
+#LAMBDA<(x) (eq x (quote ()))>
+false
+true
+#LAMBDA<(x y) (cond (x (cond (y (quote true)) ((quote true) (quote false)))) ((quote true) (quote false)))>
+true
+false
+#LAMBDA<(x) (cond (x (quote false)) ((quote true) (quote true)))>
+false
+true
+#LAMBDA<(x y) (cond ((null x) y) ((quote true) (cons (car x) (append (cdr x) y))))>
+(a b c d)
+(c d)
+#LAMBDA<(x y) (cond ((and (null x) (null y)) (quote ())) ((and (not (atom x)) (not (atom y))) (cons (list (car x) (car y)) (pair (cdr x) (cdr y)))))>
+((x a) (y b) (z c))
+#LAMBDA<(x y) (cond ((eq (caar y) x) (cadar y)) ((quote true) (assoc x (cdr y))))>
+a
+new
+#LAMBDA<(e a) (cond ((atom e) (assoc e a)) ((atom (car e)) (cond ((eq (car e) (quote quote)) (cadr e)) ((eq (car e) (quote atom)) (atom (eval (cadr e) a))) ((eq (car e) (quote eq)) (eq (eval (cadr e) a) (eval (caddr e) a))) ((eq (car e) (quote car)) (car (eval (cadr e) a))) ((eq (car e) (quote cdr)) (cdr (eval (cadr e) a))) ((eq (car e) (quote cons)) (cons (eval (cadr e) a) (eval (caddr e) a))) ((eq (car e) (quote cond)) (evcon (cdr e) a)) ((quote true) (eval (cons (assoc (car e) a) (cdr e)) a)))) ((eq (caar e) (quote label)) (eval (cons (caddar e) (cdr e)) (cons (list (cadar e) (car e)) a))) ((eq (caar e) (quote lambda)) (eval (caddar e) (append (pair (cadar e) (evlis (cdr e) a)) a))))>
+#LAMBDA<(c a) (cond ((eval (caar c) a) (eval (cadar c) a)) ((quote true) (evcon (cdr c) a)))>
+#LAMBDA<(m a) (cond ((null m) (quote ())) ((quote true) (cons (eval (car m) a) (evlis (cdr m) a))))>
+a
+true
+(a b c)
+list
+(a b c)
+a
+(a c d)

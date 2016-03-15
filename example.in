@@ -1,0 +1,148 @@
+(quote a)
+(quote (a b c))
+
+(atom (quote a))
+(atom (quote (a b c)))
+(atom (quote ()))
+
+(eq (quote a) (quote a))
+(eq (quote a) (quote b))
+(eq (quote ()) (quote ()))
+
+(car (quote (a b c)))
+(cdr (quote (a b c)))
+(cons (quote a) (quote (b c)))
+
+(cond ((eq (quote a) (quote b)) (quote first)) ((atom (quote a)) (quote second)))
+
+((lambda (x) (cons x (quote (b)))) (quote a))
+((lambda (x y) (cons x (cdr y))) (quote z) (quote (a b c)))
+((lambda (f) (f (quote (b c)))) (lambda (x) (cons (quote a) x)))
+
+(label subst
+ (lambda (x y z)
+  (cond ((atom z)
+         (cond ((eq z y) x)
+               ((quote true) z)))
+        ((quote true) (cons (subst x y (car z))
+                            (subst x y (cdr z)))))))
+(subst (quote m) (quote b) (quote (a b (a b c) d)))
+
+(label defun
+ (macro (n p e)
+  (cons (quote label)
+  (cons n
+  (cons (cons (quote lambda) 
+        (cons p
+        (cons e
+        (quote ()))))
+  (quote ()))))))
+
+(defun list (x y) (cons x (cons y (quote ()))))
+
+(defun caar (e) (car (car e)))
+(defun cadr (e) (car (cdr e)))
+(defun cadar (e) (car (cdr (car e))))
+(defun caddr (e) (car (cdr (cdr e))))
+(defun caddar (e) (car (cdr (cdr (car e)))))
+
+(defun null (x) (eq x (quote ())))
+(null (quote a))
+(null (quote ()))
+
+(defun and (x y)
+ (cond (x (cond (y (quote true)) ((quote true) (quote false))))
+       ((quote true) (quote false))))
+
+(and (atom (quote a)) (eq (quote a) (quote a)))
+(and (atom (quote a)) (eq (quote a) (quote b)))
+
+
+(defun not (x) (cond (x (quote false)) ((quote true) (quote true))))
+
+(not (eq (quote a) (quote a)))
+(not (eq (quote a) (quote b)))
+
+(defun append (x y)
+ (cond ((null x) y)
+       ((quote true) (cons (car x) (append (cdr x) y)))))
+
+(append (quote (a b)) (quote (c d)))
+(append (quote ()) (quote (c d)))
+
+(defun pair (x y)
+ (cond ((and (null x) (null y)) (quote ()))
+       ((and (not (atom x)) (not (atom y)))
+        (cons (list (car x) (car y))
+              (pair (cdr x) (cdr y))))))
+
+(pair (quote (x y z)) (quote (a b c)))
+
+(defun assoc (x y)
+ (cond ((eq (caar y) x) (cadar y))
+       ((quote true) (assoc x (cdr y)))))
+
+(assoc (quote x) (quote ((x a) (y b))))
+(assoc (quote x) (quote ((x new) (x a) (y b))))
+
+
+(defun eval (e a)
+ (cond
+  ((atom e) (assoc e a))
+  ((atom (car e))
+   (cond
+    ((eq (car e) (quote quote)) (cadr e))
+    ((eq (car e) (quote atom))  (atom (eval (cadr e) a)))
+    ((eq (car e) (quote eq))    (eq   (eval (cadr e) a)
+                                      (eval (caddr e) a)))
+    ((eq (car e) (quote car))   (car  (eval (cadr e) a)))
+    ((eq (car e) (quote cdr))   (cdr  (eval (cadr e) a)))
+    ((eq (car e) (quote cons))  (cons (eval (cadr e) a)
+                                      (eval (caddr e) a)))
+    ((eq (car e) (quote cond))  (evcon (cdr e) a))
+    ((quote true) (eval (cons (assoc (car e) a)
+                           (cdr e))
+                     a))))
+  ((eq (caar e) (quote label))
+   (eval (cons (caddar e) (cdr e))
+         (cons (list (cadar e) (car e)) a)))
+  ((eq (caar e) (quote lambda))
+   (eval (caddar e)
+         (append (pair (cadar e) (evlis (cdr e) a))
+                 a)))))
+(defun evcon (c a)
+ (cond ((eval (caar c) a)
+        (eval (cadar c) a))
+       ((quote true) (evcon (cdr c) a))))
+(defun evlis (m a)
+ (cond ((null m) (quote ()))
+       ((quote true) (cons (eval (car m) a)
+                        (evlis (cdr m) a)))))
+
+
+(eval (quote x) (quote ((x a) (y b))))
+
+(eval (quote (eq (quote a) (quote a))) (quote ()))
+
+(eval (quote (cons x (quote (b c))))
+      (quote ((x a) (y b))))
+
+(eval (quote (cond ((atom x) (quote atom))
+                   ((quote true) (quote list))))
+      (quote ((x (quote (a b))))))
+
+(eval (quote (f (quote (b c))))
+      (quote ((f (lambda (x) (cons (quote a) x))))))
+
+(eval (quote ((label firstatom (lambda (x)
+                                (cond ((atom x) x)
+                                      ((quote true)
+                                        (firstatom (car x))))))
+              y))
+      (quote ((y ((a b) (c d))))))
+
+(eval (quote ((lambda (x y) (cons x (cdr y)))
+              (quote a)
+              (quote (b c d))))
+      (quote ()))
+
